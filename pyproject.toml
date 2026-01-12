@@ -1,0 +1,71 @@
+[project]
+name = "tjm-project"
+version = "1.0.0"
+description = "Desktop automation project for fetching posts and processing them in Notepad"
+readme = "README.md"
+requires-python = ">=3.8.1"
+authors = [
+    {name = "Mohamed", email = ""}
+]
+license = {text = "MIT"}
+keywords = ["automation", "desktop", "notepad", "api", "botcity"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+
+dependencies = [
+    "opencv-python>=4.8.0",
+    "numpy>=1.24.0",
+    "mss>=9.0.1",
+    "Pillow>=10.0.0",
+    "pyautogui>=0.9.54",
+    "pygetwindow>=0.0.9",
+    "requests>=2.31.0",
+    "pyperclip>=1.8.2",
+    "botcity-framework-core>=0.1.0",
+    "urllib3>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.7.0",
+    "flake8>=6.1.0",
+    "mypy>=1.5.0",
+]
+
+[project.scripts]
+tjm-project = "main:main"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["."]
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311', 'py312', 'py313']
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
