@@ -1,6 +1,5 @@
 import os
 import time
-import stat
 import pyautogui
 import pygetwindow as gw
 import cv2
@@ -25,92 +24,57 @@ from config import (
 
 
 def fallback_fetch_posts_via_default_browser():
-    """Open the API URL in default browser and copy JSON from clipboard."""
     print("Opening API URL in default browser...")
     try:
-        # Clear clipboard first
         pyperclip.copy("")
-        
-        # Open URL in default browser
         webbrowser.open(POSTS_API)
-        time.sleep(6)  # Wait for browser to open and load
-        
-        # Click on the page to ensure it's focused
+        time.sleep(6)
+
         pyautogui.click(400, 300)
         time.sleep(1)
-        
-        # Select all and copy
-        pyautogui.hotkey('ctrl', 'a')
-        time.sleep(1.5)
-        pyautogui.hotkey('ctrl', 'c')
-        time.sleep(3)
-        
-        # Get data from clipboard
-        data = pyperclip.paste()
-        
-        if not data or not data.strip().startswith('['):
-            print("Retrying clipboard copy...")
-            time.sleep(1)
-            pyautogui.click(400, 300)
-            time.sleep(1)
+
+        for _ in range(2):  # محاولة واحدة إضافية فقط
             pyautogui.hotkey('ctrl', 'a')
-            time.sleep(1.5)
+            time.sleep(1)
             pyautogui.hotkey('ctrl', 'c')
-            time.sleep(3)
+            time.sleep(2)
+
             data = pyperclip.paste()
-        
+            if data and data.strip().startswith('['):
+                break
+            time.sleep(1)
+
         if not data or not data.strip().startswith('['):
-            print(f"Error: Clipboard doesn't contain JSON. Content: {data[:200]}...")
-            # Minimize browser instead of closing
-            try:
-                chrome_windows = gw.getWindowsWithTitle("Chrome")
-                if chrome_windows:
-                    chrome_windows[0].minimize()
-                    print("Browser minimized.")
-            except:
-                pyautogui.hotkey('win', 'down')  # Alternative minimize method
+            print("Clipboard doesn't contain valid JSON.")
+            chrome_windows = (
+                gw.getWindowsWithTitle("Chrome") or
+                gw.getWindowsWithTitle("Google Chrome") or
+                gw.getWindowsWithTitle("chromium")
+            )
+            if chrome_windows:
+                chrome_windows[0].minimize()
+            else:
+                pyautogui.hotkey('win', 'down')
             return []
-        
+
         posts = json.loads(data)
-        print(f"Successfully fetched {len(posts)} posts from default browser.")
-        
-        # Minimize browser instead of closing
-        try:
-            # Try to find Chrome window by title
-            chrome_windows = gw.getWindowsWithTitle("Chrome")
-            if not chrome_windows:
-                # Try alternative browser names
-                chrome_windows = gw.getWindowsWithTitle("Google Chrome")
-            if not chrome_windows:
-                chrome_windows = gw.getWindowsWithTitle("chromium")
-            
-            if chrome_windows:
-                chrome_windows[0].minimize()
-                print("Browser minimized successfully.")
-            else:
-                # Fallback: Use keyboard shortcut to minimize
-                pyautogui.hotkey('win', 'down')
-                print("Browser minimized using keyboard shortcut.")
-        except Exception as e:
-            print(f"Could not minimize browser: {e}. Using keyboard shortcut.")
-            pyautogui.hotkey('win', 'down')  # Alternative minimize method
-        
-        time.sleep(0.5)
-        
+        print(f"Fetched {len(posts)} posts via browser.")
+
+        chrome_windows = (
+            gw.getWindowsWithTitle("Chrome") or
+            gw.getWindowsWithTitle("Google Chrome") or
+            gw.getWindowsWithTitle("chromium")
+        )
+        if chrome_windows:
+            chrome_windows[0].minimize()
+        else:
+            pyautogui.hotkey('win', 'down')
+
         return posts[:MAX_POSTS]
+
     except Exception as e:
-        print(f"Error fetching from default browser: {e}")
-        try:
-            # Minimize browser instead of closing
-            chrome_windows = gw.getWindowsWithTitle("Chrome")
-            if not chrome_windows:
-                chrome_windows = gw.getWindowsWithTitle("Google Chrome")
-            if chrome_windows:
-                chrome_windows[0].minimize()
-            else:
-                pyautogui.hotkey('win', 'down')
-        except:
-            pass
+        print(f"Browser fallback failed: {e}")
+        pyautogui.hotkey('win', 'down')
         return []
 
 
@@ -124,10 +88,8 @@ def fetch_posts():
         print("API unavailable, opening Chrome to fetch posts.")
         print("=" * 60)
         posts = fallback_fetch_posts_via_default_browser()
-        if posts:
-            return posts
-        print("\n[FAILED] Could not fetch posts using any method.")
-        return []
+
+        return posts
 
 def close_unexpected_popups(main_window_title):
     
