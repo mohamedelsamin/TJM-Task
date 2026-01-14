@@ -30,6 +30,29 @@ def fallback_fetch_posts_via_default_browser():
         webbrowser.open(POSTS_API)
         time.sleep(6)
 
+        chrome_windows = None
+        for title in ["Chrome", "Google Chrome", "chromium"]:
+            windows = gw.getWindowsWithTitle(title)
+            if windows:
+                chrome_windows = windows[0]
+                break
+        
+        if chrome_windows:
+            # Check if window is maximized
+            if not chrome_windows.isMaximized:
+                print("Browser window is not maximized. Maximizing...")
+                chrome_windows.maximize()
+                time.sleep(1)  # Wait for maximize animation
+                print("Browser maximized successfully.")
+            else:
+                print("Browser window is already maximized.")
+            
+        else:
+            print("Could not find browser window. Using keyboard shortcut to maximize.")
+            # Fallback: Try to maximize using keyboard shortcut (Win+Up)
+            pyautogui.hotkey('win', 'up')
+            time.sleep(1)
+
         pyautogui.click(400, 300)
         time.sleep(1)
 
@@ -40,22 +63,6 @@ def fallback_fetch_posts_via_default_browser():
             time.sleep(2)
 
             data = pyperclip.paste()
-            if data and data.strip().startswith('['):
-                break
-            time.sleep(1)
-
-        if not data or not data.strip().startswith('['):
-            print("Clipboard doesn't contain valid JSON.")
-            chrome_windows = (
-                gw.getWindowsWithTitle("Chrome") or
-                gw.getWindowsWithTitle("Google Chrome") or
-                gw.getWindowsWithTitle("chromium")
-            )
-            if chrome_windows:
-                chrome_windows[0].minimize()
-            else:
-                pyautogui.hotkey('win', 'down')
-            return []
 
         posts = json.loads(data)
         print(f"Fetched {len(posts)} posts via browser.")
@@ -313,4 +320,3 @@ if __name__ == "__main__":
         time.sleep(1)
     
     print(f"\nAll {len(posts)} posts processed successfully!")
-
